@@ -1,0 +1,309 @@
+
+Serverless is a cloud-native development model that allows developers to build and run applications without having to manage servers
+	- decouples application into micro services 
+		- event producers
+		- event consumers
+		- event routers
+	- less operational overhead
+	- concentrate on logic
+	- Pay for use (cost optimization)
+	- Scale automatically (by service provider)
+
+a) AWS SAM is an open-source framework for building serverless applications on AWS. It allows you to define your serverless resources, such as AWS Lambda functions and Amazon S3 buckets, using a simple YAML template. 
+SAM also provides a set of CLI commands for building, testing, and deploying your serverless application.
+
+B) A serverless application is a combination of Lambda functions, event sources, and other resources that work together to perform tasks. 
+But a serverless application is more than just a Lambda function—it can include additional resources such as APIs, databases, and event source mappings.
+
+Cloud Computing Models
+	- IaaS (Infra as service) 
+		- most basic fundamental block that can be rented. 
+		- *renting EC2 instance 
+	SaaS (Software as a service)
+		- An application on demand
+		- *Sagemaker (ML), 
+	PaaS (Platform as a service)
+		- used by devs
+		- develop software using web based tools w/o worrying underlying infra
+		
+Deployment models
+	- Private (on premise)
+	- Public (AWS cloud)
+	- Hybrid (Public for most, Private for sensitive data. Direct Connect service for data exchange) 
+
+Global Infra:
+	- Regions:  Resources isolated between	regions. Regions contain two or more AZs
+	- Availability zone: One or more physical separated data centers; fault tolerant; high availability
+	- Edge location: (like a mini data center) cache content for fast delivery (allowed by cloud front) 
+
+Latency: Amount of time passes between request and response
+
+Serverless Advantages:
+	- No servers to manage 
+	- Scalability/Elasticity (more requests = more resources): add/remove resources based on demand/load
+	- Agility: faster speed to market 
+	- High Availability - operates continuously w/o failure for a long time, 
+	- Modular
+	- No idle capacity (pay as you go)
+
+Limitations:
+	- Lack of testing and debugging (no access to underlying infra, or server/host)
+	- Long running process can ramp up the bill 
+	- Cold start-times: services that are not used frequently might be slower than expected 
+		(setup cron job to warm up functions)
+
+Ways to mitigate limitations:
+	- AWS Xray helps debugging AWS lambdas
+	- Run lambda services on a local docker machine 
+
+- Normally has 3 layers
+	- Front-end
+		- presentation layer/GUI (s3/static website, mobile app, etc…)
+	- Application
+		- Compute resources are used here. It doesn’t store persistent data. Just make a depiction
+			about where things go.
+	- Data Persistance 
+		- Aurora serverless (mysql/postgress), DynamoDB (like mongodb)
+
+- Serverless are excellent for microservises and event based architecture where you can break down a monolith into 	independent self-contained components that each only do a specific specific single task.
+	Having a modular event-based micro service architecture provides added stability and disaster recovery
+
+	- Event-driver archetecture allows using events to trigger action between decoupled resources
+	- Think of each resource as an event producer, router or consumer
+	- Resources scale and fail independent of each other
+
+FirstCdkAppStack.MyRestAPIEndpointA2E1DEAF = https://l6upc0ys39.execute-api.us-east-1.amazonaws.com/prod/
+
+Common Serverless services:
+	 - Orchestration
+		- EventBridge: Receive/Send events
+		- Step function: allows ordering events (workflows)
+		- SQS: allows creating a queue of events (poll for messages)
+			- queuing service for message processing
+			- sqs can be a subscriber to an SNS topic
+			- a system must poll the queue to discover new events - there’s nothing that will notify of a new event
+			- messages are typically processed by a single consumer with a narrow responsibility			- events should be deleted manually (by consuming service)
+			- question to ask: Does your system care about an event?
+		- SNS (simple notification service): Notify subscribers when events occur
+			- pub/sub system
+			- you may own a topic, and you may publish to that topic
+			- subscribers get notified when events are derived to the topic
+			- publishing messages to a topic can deliver to many subscribers (fan out) of different types (sis, lambda, email)
+			- question to ask: Do other systems care about an event?
+		- Lambda: service
+	- Networking
+		- Route53: DNS service
+		- AppSync: GraphQL API
+		- API Gateway: Rest/Http API
+	- Data
+		- DynamoDB: NoSQL DB
+		- S3: Object store
+		- Kinesis: data streaming 
+		- Athena: allows querying static data (s3 buckets or other sources)
+		- Secret Manager: manage secrets	
+		- CloudFront: CDN
+	- Infra
+		CloudFormation/CDK
+	- others
+		- Congnito
+		- CloudWatch
+		-XRay
+
+
+Use cases for serverless
+	- Application backends
+	- Realtime or Streaming data processing (using kinesis)
+	- 
+
+
+S3 static website commands (AWS CLI)
+	- aws s3 mb dimon123 (creates a bucket s3://dimon123)
+	- aws s3 website s3://dimon123 —index-document index.html  (convert a bucket into static website)
+	- aws s3api put-bucket-policy —bucket dimon123 —policy file://policy.json (add bucket  policy)
+	- aws s3 cp index.html <bucket_name> (copy file into a bucket)
+	- curl http://<bucket_name>.s3-website.<region>.amazonaws.com
+
+	[cloudfront]
+	- aws cloudfront create-cloud-front-origin-access-identity --cloud-front-origin-access-identity-config CallerReference=9231,Comment=MyOAI (Creates Origin Access Identity)
+	- aws cloudfront create-distribution --origin-domain-name <BUCKET_NAME>.s3.amazonaws.com --default-root-object index.html (creates cloudfront distribution)
+	- aws cloudfront get-distribution-config --id <CF_DIST_ID> | jq -r .DistributionConfig > dist-config.json (get dist config)
+	- aws cloudfront update-distribution --id <DISTRIBUTION_ID> --distribution-config file://dist-config.json --if-match <DISTRIBUTION_ETAG> (upload updated list config)
+
+
+Lambda workflow
+	- request comes in from an event
+	- is there active lambda container that’s running and not busy by another event processing?
+		- yes: use lambda from a pool of running function containers [warm]
+		- no: new function container is created; code downloaded; Runtime env started [cold start]
+
+	[additional info]
+	- changed based on requests  + duration of execution
+	- supports blue/green deployments
+	- allows useful triggers from S3/SNS, etc…
+	- automatic scaling, built-in fault tolerance 
+	- lambda layers?
+
+	[triggers]
+		async events: queues events before sending them to the lambda: s3, sns, ses, CF
+		sync  events: ….
+
+	[create lambda via AWS CLI]
+	- aws iam create-role --role-name LambdaIAMRole --description "Lambda Role" --assume-role-policy-document file://lambda_assume_role_policy.json 
+	- aws iam create-policy --policy-name LambdaRolePolicy --policy-document file://lambda_execution_policy.json (creates lambda policy)
+	- aws iam attach-role-policy --role-name "LambdaIAMRole" --policy-arn <POLICY_ARN> (attach policy to a role)
+	- aws sns create-topic --name LambdaTopic --region us-east-1 (create sns topic)
+	- aws sns subscribe --protocol "email" --topic-arn <TOPIC_ARN> --notification-endpoint <EMAIL_ADDRESS> --region us-east-1 (Create SNS email notification)
+	- aws lambda create-function --memory-size 128 --function-name my-lambda --runtime python3.7 --handler lambda_function.lambda_handler --zip-file fileb://lambda_function.zip --role <ROLE_ARN> (create lambda from zip source code)
+	- aws lambda add-permission --action lambda:InvokeFunction --principal s3.amazonaws.com --statement-id LabS3Trigger --function-name my-lambda --source-arn "<ARN_S3_BUCKET>"
+	- aws s3api put-bucket-notification-configuration --bucket <S3_BUCKET_NAME> --notification-configuration file://bucket-trigger-notification.json (create bucket notification config)
+
+Lambda details
+	Lambda function - your function code
+	Lambda service - initializes and calls lambda function, as well as handling input/output
+
+	Invocation type
+		Synchronous
+			caller pauses invocation and wait until lambda returns a result 
+		Asynchronous 
+			Service will queue the request and return an immediate response
+			Caller will continue running
+			function will run when its time comes, then output its result into some other service 
+
+	Event source mapping
+		Event source is configured in lambda service
+		Lambda will poll the source
+		Lambda service will initialize function as required and invoke them with events as an input
+		Responses of these executions can be routed to other services 
+		Supported sources
+			SQS, Kinesis, Active MQ, Kafka, 
+			DynamoDB (in response to DB updates), 
+			Rest API requests,
+			Object Uploads to S3 buckets
+			DocumentDB 
+
+
+	Handler: exports.handler = (event, context) => { …;  }
+
+		event: supplies a lambda with an input from a source that triggered this lambda (different for different sources)
+		context: 
+ 			functionVersion: '$LATEST',
+  			functionName: 'myLambda',
+  			memoryLimitInMB: '128',
+  			logGroupName: '/aws/lambda/myLambda',
+  			logStreamName: '2024/01/11/[$LATEST]fe0710ff34bb4300bac4019f2d7b6b3b',
+  			clientContext: …, (can be Cognito tokens from mobile app)
+  			awsRequestId: '9bd2b88a-ff8f-482e-8b3d-5cd39d7dcba8',
+  			getRemainingTimeInMillis: [Function: getRemainingTimeInMillis]
+		
+		returns are optional. Some runtimes support response streaming (New Invocation pattern). It improves Time To First Byte (node.js support it)
+
+	Bad use cases
+		- Long running process (billed for the time the function is running)	
+		- Constant workload (too many requests)
+		- Extra large code base (lambda dynamically loads code each time it runs)
+		- Long term state 	
+
+	Memory config
+		- 128MB (min & default)
+		- 10GB max
+		- increases in 1MB increments
+		- 10GB lambda is 80x the price of 128MB
+		- more memory = more compute power
+		- vCPU (virtual CPU) - fraction of physical CPU allocated to a VM  (managed by hypervisor)
+		- 128MB = 7% of vCPU; 1769MB = 1 vCPU; 10GB = 6 vCPU’s
+		- timeout: 1 sec - 15 min; 1 sec increments
+
+	Networking
+		- VPC - Virtual Private Cloud (Virtualized version of a traditional data center)
+		- Lambdas run outside of VPCs therefore they cannot access resources within VPCs by default
+		- Every region consists of at least 2 data centers
+		- 
+	
+
+EventBridge
+	- Serverless event bus with real-time access to changes in our environments, custom apps, and 3rd party saas vendors
+	- it’s an evolution of CloudWatch events
+	- We can immediately react to events in our environment
+	- Ability to easily integrate with other services 
+	- events are processed one at a time & can match rules to be sent to multiple targets
+
+	Events/rules/destinations
+		- event: source of change details in the environment (gets sent to the EventBridge)
+			Each event arriving at EventBus has following fields (json format)
+			  - source (ex. “aws.ec2”)
+			  - detail-type (ex. “EC2 instance change notification”)
+			  - detail (ex: {“instance-id”: “”xyz2123, “state”: “terminated”})
+
+		- rules: instructions to matching events that are received
+			- match and send events to designated targets
+			- ability to leverage a single rule for multiple targets 
+			- event pattern
+			- cron/rate schedule
+			- Aws offers managed rules
+		
+		- targets
+			- targets/destinations for our rules (based on event pattern or schedule)
+			- up to 5 targets for a single event bridge rule
+			- must have correct permissions to publish events to the targets
+
+			- API destinations
+				- HTTP endpoints are invoked as a target of a rule (triggered via REST call)
+				- route events to AWS services, SAAS apps, custom apps
+				- can use any HTTP method besides CONNECT & TRACE
+				- event inputs can be transformed before events are sent to their destinations 
+				- timeout rule: 5 seconds (response within 5 sec)
+
+		- replay: archive where we can save events and replay them at later times
+			- Replay events stored in archive
+				- Source archive
+				- start/end time for event replay
+				- Target event bus
+				- add 1 or more rules for replaying of events
+			- maximum 10 concurrent replys 
+
+			- 
+
+	Pricing
+		* event payload is billed at 64KB sizes
+		- Event buses: 
+			- Default Service events within AWS: free
+			- Custom events: $1 per 1 million published messages/events
+			- 3rd party saas events: #1 per million messages/events
+			- Cross account events: $1 per million sent
+		- API destinations
+			- $0.20 per million invocations
+		- Replay
+			- Archive processing: $0.10 per GB
+			- Storage/Month: $0.023 per GB
+
+	EventBus
+		- serverless pipeline that can receive events from different sources
+		- rules are associated with buses and evaluated any time an event is received
+			- 300 rules per event limit
+		
+		Types
+			- A default event bus is created for each region during account creation time (no charge)  
+			- cross account event types
+			- SAAS - configured to receive 3rd party events
+
+
+
+[AWS Aurora RDBMS]
+	- Aurora Serverless is an on-demand, auto-stalling configuration for Aws Aurora (MySQL & Postgrees)
+	- smooth scaling, no downtime  (scales as load increases/decreases)
+	- Data API allows integration with Lambda and other services
+	- behind the scenes: Fleet of proxy servers -> load balanced connections  
+	- 
+
+
+[Step function]
+	- Multi step workflow
+	- ASL: Amazon states language for defining step functions
+	
+
+
+
+	
+	
+
+
