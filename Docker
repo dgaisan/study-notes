@@ -1,0 +1,1035 @@
+Terminology
+	- Image
+		- read-only template that contains instructions for creating a Docker container
+		- it includes everything needed to run an application: code, libs, system tools
+	- Container
+		- a running instance of an image.
+		- it’s a lightweight, standalone, and executable package of software that includes everything needed to run an app
+			including code, libraries, tools, and runtime
+		(from chatGpt)
+			- a container is a lightweight, standalone and executable package of software.
+			- it includes everything needed to run an application or a service 
+			- provides an isolated environment for running applications, e.g. they can run on any host machine w/o any modification
+	- Dockerfile
+		- text file that contains instructions for building a Docker Image
+		- specifies the base image to use, the commands to run, and other config settings
+	- Registry 
+		- server or repo where Docker images are stored and distributed
+		- default registry is Docker Hub
+		- there are public and private registries available 
+	- Volume
+		- persistent data storage mechanism that allows containers to store and share data with each other and with the host system
+	- Network
+		- a way to connect Docker containers and allow them to communicate with each other 
+		- provides isolation and security between containers
+	- Compose
+		- a tool for defining and running multi-container Docker apps
+		- uses YAML to define services that make up and application, and can stop, start, and manage those services as a single unit.
+ 
+
+*Basics of Linux
+	- File System
+		- Linux user hierarchical file system (similar to other Unix-like systems). 
+		- Root dir: /
+	- Users & Permissions
+		- multi-user OS where multiple users can log in and use the system simultaneously
+		- Each user has their own home directory
+		- Each user has their own set of permissions that determines what they can do on the system 
+	- Package management
+		- allows users to easily install, update, and remove software packages
+		- There are many package systems available, such as 
+			- yum(Yellodog Updater, Modified) in RedHat based systems ( .rpm package): 
+				- RHEL, 
+				- CentOS - free altrernanive to RHEL, community driven, 
+				- Amazon Linux 2, 
+				- Fedora - created by Redhat, community driven, testing ground for new features and what may become part of RHEL, 
+				- Open Suse
+			- apt in Debian-based system(.deb package): 
+				- Debian - oldest and most respected linux distribution, created in 1993, 
+				- Ubuntu - most popular distro, 
+				- Raspberry PI OS - based on Ubuntu
+				- Mint - based on Ubuntu
+			- dpkg - Low level package manager for Debian based systems
+	- CLI (Command line interface) 
+		- text based interface
+		-allows users to automate tasks using scripts and batch files
+	- Shell
+		- a program that provides interface between the user and the OS
+		- Used by CLI: CLI captures user’s input, and passes it to shell for execution
+		- there are many different shells available: bash, zsh
+	- Networking
+		- excellent networking capabilities and support for a wide range of protocols and services: TCP/IP, SSH, FTP, HTTP
+		- Linux can be used as a server for web hosting, email, file sharing, etc…
+	- Security
+		- Linux is known for its security features such as firewalls, file permissions, and encryption
+		- sec tools: appAmore, iptables
+
+*Linux Kernel releases
+	- 1.0
+		- March 1994: Initial release by Linus Torvalds
+	- 1.2
+		- March 1995: Networking support, ext2 filesystem
+	- 2.2
+		- Jan 1999: USB support improved networking
+	- 2.6
+		- Dec 2003: Improved scalability, support for new architectures, improved power management
+	- 3.10
+		- June 2013: Improved virtualization, support for new hardware
+	- 4.0
+		- Apr 2015: Improved graphics support, reduced RAM usage
+	- 5.0
+		- Mar 2019: Improved support for high end CPUs, support for free-sync (variable refresh rate in displays)
+	- 5.8
+		- Aug 2020: Improved performance, support for new hardware
+	- 5.12
+		- Apr 2021: Improved support for Arm processors, improved memory management 
+
+*Basics of Networking
+	- Network interface (Network Interface Controller - NIC, or network adapter, or network card)
+		- a hardware component that connects computers to network
+		- it can be built into device’s motherboard or added as an extension
+		- responsible for converting digital data into a format that can be transmitted over the network, and vice versa 
+	- Switch
+		- device that connects multiple devices (computers, servers, printers) on a local area network (LAN)
+		- Switches Operate on DataLink layer (Layer2 of OSI)
+		- Use MAC addresses to direct traffic
+	- Router
+		- Device that connects multiple networks together
+		- Operates at network layer (Layer3)
+		- Responsible for determining the optimal path for network traffic to reach its destination
+		
+	- Traffic flow
+		- Within the office all devices are connected via a Switch that controls internal traffic and allows communicating between devices (using MAC address)
+		- Switch will be connected to the router to enable internet connectivity
+		- Device on a LAN sends a packet to a Switch, Switch examines destination MAC address in the packet and forward it to the router
+		- The router examines the destination IP address and determines the best path to forward it to its destination on the internet
+	- Routing Tables
+		- Data structure used by network devices (like routers) to determine how to forward network traffic to its destination
+		- ip route show (Linux)
+		- netstat -nr (Mac)
+	- Gateway
+		- network node that serves as an access point to another network
+		- it is typically a router or a switch that provides a connection between the local network and other networks such as the internet or another LAN
+		- responsible for routing network traffic between networks and can be configured to filter or block traffic based on specific criteria
+	- ifconfig 
+		- utility to display information about network interfaces
+		- 
+
+
+History of containers
+	- 1970’s: Mainframes - mostly governments used them. Businesses used to rent them
+	- 1979: chroot - CHange ROOT: changes a parent root dir of a process and all its children processes (they will only be aware only of the view of file structure of this chroot env)
+	- 1990’s - chrooted jail (chroot env to study crackers/hackers)
+	- 2007 - Google’s process containers: designed to isolate and limit resource usage of a process (cgroup)
+	- 2013 - Google launched LMCTFY: container stack (halted and donated the source code to Docker)
+	- 2013 - Docker is released (and opensourced by Dotcloud); it started as a python script in 2008
+	- 2014 - Google open sourced Kubernetis (from google’s Borg system) 
+	- 2016 - Docker Swarm (cluster)
+
+Chroot 
+	- provides a way to isolate a process and its children from the rest of the system, limiting their access to specific files and directories.
+	- allows changing root directory to another directory 
+	- the new directory becomes the root directory for the current process and its children 
+		and therefore they cannot access files/directories outside of the chroot jail
+	- Allows creating containerized/limited view of the system
+	- a chrooted jail can be created for users via chroot
+	- 
+
+Jail
+	- method of creating a virtual OS that is isolated from the other parts of the same system
+	- provides a contained environment with its own directory structure, file system, process space
+	- used to run applications or services without interfering with the host system
+	- commonly used for creating sandboxes to test new applications or to run untrusted software
+	- feature of freeBSD OS
+
+Linux Namespace
+	- just like a jail its purpose is to create isolated environments
+	- feature of linux kernel that allows a process to have a unique view of system resources 
+	- used for containerization and virtualization
+	 
+Network namespaces
+	- Linux kernel feature that allows different processes to have different network stacks
+	- Allows for multiple virtual network interfaces, IP addresses, routing tables, and other network related resources to coexist
+	- cat /etc/issue (get linux distro info)
+
+Control Groups (cgroups)
+	- feature of linux kernel
+	- provides a way to manage and limit system resources by processes and groups of processes
+	- Docker uses cgroups and namespaces to isolate and manage containers
+
+Virtualization
+	- Acts as a virtual computer/OS
+	- runs on host OS
+	- Hypervisor
+		- Virtual machine manager
+		- Type 1
+			- Runs directly on the system hardware: Bare metal 
+		- Type 2
+			- Runs on host OS
+
+Linux Containers (LXC/LXD)
+	- middle ground between a fully Chrooted env and full Virtual Machine
+	- enables creating isolated environments quickly
+	- it’s like a Docker, but it’s been around longer, it’s more low level, with worse UX
+	- LXD - Linux Daemon : allows to communicate with LXC
+	- sudo apt install lxd lxd-client
+	- sudo lxd init (initialize a container )
+	- lxc launch ubuntu:22.04 
+	- lxc list (see available containers/images)
+	- lxc launch ubuntu:22.04 my-ubuntu
+	- lxc launch images:alpine/3.13 my-alpine (pull/launch another image) 
+	- lxc exec my-ubuntu -- /bin/bash (interact with container)
+	- lxc exec my-alpine -- /bin/ash (interact with alpine contaienr)
+	- lxc remote list (list of remote image hubs)
+	- lxc image list (list of local images)
+
+Container Workflow
+	- 
+
+Linux Kernel
+	- Core component of Linux (along with shell, utilities, system libs, window system, desktop env, apps)
+	- responsible for managing system resources (CPU, memory, I/O devices)
+	- provides low-level services to applications
+	- first program to run when the system boots up
+	- controls all aspects of OS: hardware init, process scheduling, memory management
+
+Unix Socket
+	- type of communication endpoint between processes on Unix-like systems
+	- it is a file system object represented as file in a file system, that processes can use to exchange data with each other directly in memory
+	- it’s similar to network socket which is used for communication between processes over a network, BUT 
+		Unix socket is used for communication between processes on the same machines
+
+Netwok Socket
+	- an endpoint for sending and receiving data over the network 
+	- identified by IP address and a Port number
+	- IP address identifies the Network Interface on the machine where the socket is located
+	- Port number identifies a specific application or a process that is listening for incoming data
+	- when data is sent to a socket, the receiving application/process reads it from the socket and then processes it accordingly 
+	- when an app wants to send data over a network it writes the data to the socket 
+	- for example HTTP
+		- HTTP is built on top TCP which is a protocol that provides reliable, ordered, and error-checked delivery of data between apps over an IP network
+		- TCP, like many other application level protocols uses sockets to establish connection between a client and a server
+		- when a client initiates a connection it establishes a socket connection with the server’s IP address and Port 80	 
+systemd
+	- system and service manager in Linux based OS
+	- responsible for starting/stopping services, managing system resources, handling system events, and logging
+	- replaces traditional SysV system
+	- also provides process tracking, resource control, and socket activation
+	- it’s a core component of modern Linux systems that provides and efficient/reliable way to manage services and resources 
+	- systemctl - primary command-line tool used to control systemd and manage system services
+
+systemctl vs service
+	- both used for managing services in Linux systems
+	- systemctl is newer and more powerful command for managing services
+	- systemctl is preferred command, and it uses systemd init system
+	- service is a legacy command used to manage services in older Linux distros
+	- service is still included in many Linux distros for backward compatibility 
+
+systemctl
+	- command used to control systemd system and service manager. Used to start, stop, and manage services
+	- service
+		- a program or a set of programs that runs in the background and provide a specific functionality to the system or other apps.
+		- typically a service starts when a system boots up
+		- managed by system utilities such as systemd, upstart, sysvinit
+		- used to provide a wide range of functions such as network services, file sharing, system monitoring, …
+	- sudo systemctl start <service-name> (start a service)
+	- sudo systemctl start <service-name> (stop a service)
+	- sudo systemctl restart <service-name> (restart a service)
+	- sudo systemctl enable <service-name> (enable a service to start at boot)
+	- sudo systemctl status <service-name> (check status of a service)
+	- sudo systemctl disable <service-name> (disable a service from starting at boot)
+	- sudo systemctl list-units --type=service (list services)	
+	- sudo systemctl list-units --type=service --state=running (list all running services)
+	- sudo systemctl --failed (list of failed services)
+
+Linux folder structure
+	- /bin (contains executable binaries that are essential for the system function, such as ls, cp, mv commands)
+	- /dev (contains device files for all hardware devices connected to the system)
+	- /etc (contains system wide config files, such as user accounts, network settings, software configs)
+	- /opt (contains optional software packages that are not part of the core system)
+	- /sbin (contains system binaries used for system admin tasks such as fdisk, iptables)
+	- /tmp (contains temp files that can be safely deleted)
+	- /usr (contains user binaries, libs, docs, and source code for the system)
+	- /var (contains variable data files such as log files, and database files)
+	
+	
+Docker
+	- Docker is an app that allows us create and deploy other applications inside containers (Linux containers)
+	- Docker is a leading containerization platform.
+	- To work with Docker there needs to be a Docker deamon, and CLI.
+	- CLI and Daemon communicate over unix sockets
+	- dockerd (daemon) listens for API requests and then manages Docker objects:
+		- images
+		- containers
+		- networks
+		- volumes
+	
+	- initially was a wrapper around Linux Containers
+	- Not a replacement of LXC/LXD
+	- allows building an application, and all its dependencies into a single object called container 
+	- Versioning allows seeing how a container was assembled 
+	- allows creating images from running containers  
+	- Docker Hub - tons of public images
+	- comes in 2 options: Community Edition (CE) and Enterprise Edition
+	- Advantages of using docker:
+		- dev/prod parity (same environments)
+		- simplifying configurations
+		- code pipeline management
+		- developer productivity (local dev environment, the code is mapped into container using volumes)
+		- app isolation (memory or bugs are isolated in running containers, and not exposed to the whole system)
+		- server consolidation
+		- debug capabilities
+		- multi tenancy 
+	- Docker engine
+		- Based on an open-standard outlined by Open Container Initiative
+		- Modular design: batteries included but replaceable
+		- Major components:
+			- Docker client
+			- Docker daemon
+			- containerd
+			- runc
+		- 
+ 
+
+Docker files and directories on a system
+	- /var/lib/docker (contains Docker images, containers, volumes, and networks)
+	- /etc/docker (contains the config files for Docker; daemon.json - main config file for docker daemon)
+	- ~/.docker/ (docker files on Mac)
+	- /var/run/docker.sock (unix socket file used by Docker daemon to communicate with the Docket CLI; it allows running docker commands from the command line)
+	- /var/run/docker.pid (file containing the process id of the docker daemon)	- /var/log/docker.log (file containing log messages generated by docker daemon)
+	- /etc/systemd/system/docker.service.d (directory containing additional config files for the docker systemd service)
+
+Initialize Docker Env (RHEL/CentOS)
+	- remove older docker packages
+		- sudo yum remove -y docker \
+			docker-client \
+			docker-client-latest \
+			docker common \
+			docker-latest \
+			docker-latest-logrotate \
+			docker-logrotate \
+			docker-engine
+	- install prerequisites
+		- sudo yum install -y yum-utils device-mapper-persistent-data lvm2
+	- use yum-config-manager to add Cent OS specific docker repo
+		- sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+	- install Docker 
+		- sudo yum -y install docker-ce
+	- Enable docker daemon
+		- sudo systemctl enable --now docker
+	- Configure user permissions
+		- sudo usermod -aG docker cloud_user
+			- usermod allows to modify user account: username, home dir, default shell, group membership, etc… 
+			- for example
+				- usermod -l newusername oldusername (changes user name)
+				- usermod -d /new/home/dir username (changes home directory)
+				- usermod -s /bin/zsh username (changes default shell)
+				- usermod -aG groupname username (add a user to a supplementary group)
+				- usermod -L username (lock user account)
+				- usermod -U username (unlock user account)
+	- Run Hello-World image using docker
+		- docker run hello-world
+	- See all installed packages
+		- rpm -qa
+
+
+
+After installation
+	- to familiarize yourself with Docker best thing to do is to run containers from a few prerebuild images
+	- Docker Hub can be used to find images
+	- docker ps
+	- docker pull httpd:2.4 (if version is not specified then Docker will pull latest)
+	- docker images (list available images)
+	- docker run --name my_httpd -p 8000:80 -d httpd:2.4
+		- --name (give an alias to our container)
+		- -p (specify port: 8080 on the server will match 80 in container)
+		- -d (detached - to no block terminal)
+	- docker stop my_httpd
+	- docker ps -a (shows even stopped containers)
+	- docker rm my_httpd (remove container)
+	- docker run --name myhttpd -p 8080:80 -v $(pwd):/usr/local/apache2/htdocs:ro -d httpd:2.4
+		- -v (volume)
+	- docker history <image_name> (build history)
+
+Handcrafting a container image
+	- if we run a website from a prebuilt base image, it will require a manual process to set up the container each time it runs
+	- for repeatably and scalability the container and the website code should be made into an image
+	- docker exec -it webtemp bash
+		- run a command inside of a running container
+		- -it (attached Interactive Terminal - an interactive shell session will run inside a container)
+		- webtemp (name of a running container)
+		- bash (specifies a command to run - good practice to specify shell to run, in -it mode)
+	- docker commit <Running_Container_id> name (creates an image from a running container) 
+	- When creating an image don’t forget to clean up unnecessary tools
+		- apt remove git -y (remove any apps installed during image creation process)
+		- apt autoremove -y
+		- apt clean (remove cached files)
+		- rm -rf /tmp/…
+	- docker rmi <image_name>:<image_tag> (removes an image ex: docker rmi website:v1 )
+Docker Image
+	docker pull IMAGE (download an image from a repo)
+	docker images (list images)
+	docker rmi <IMAGE> (remove image)
+	docker rmi -f <IMAGE>
+	docker image inspect <IMAGE> (detailed info about image)
+	docker image inspect <IMAGE> --format TEMPLATE
+		docker image inspect nginx --format “{{.Architecture}}”
+		docker image inspect nginx --format “{{.Architecture}} {{.Os}}” (?)
+	docker image prune (delete all image that are not referenced by running containers)
+	docker image history IMAGE
+	*Flattenning an image
+		docker export container > flat.tar
+		cat flat.tar | docker import - flat:latest
+
+Docker Registry
+	- central place for storing and distributing docker images
+	- Docker Hub - public registry
+	- “registry”: stateless, highly available server side app that stores and lets you distribute container images and other content
+		- use registry for controlling where images are being stored, for fully owning images distribution pipelines. Good for in-house development
+		- docker run -d -p 5000:5000 --restart always --name registry registry:2
+		* docker search IMAGE (search existing images)
+		- docker pull IMAGE [:TAG] (download an image from a registry)
+		- docker login [REGISTRY] (sign into registry)
+		- docker tag IMAGE REGISTRY/TAG (publishing to private registries are done via tags)
+			- docker tag ubuntu xyz.mysevr.com/ubuntu
+			- docker image tag ubuntu localhost:5000/myfirstimage
+		- docker push REGISTRY/TAG (pushing an image to private registry)
+			- docker push localhost:500/myfirstimage
+
+Storing container data in docker volumes
+	- Storing data within a container is one option for automation a container with data
+	- it requires copy of data in each running container 
+	- once containers are called up to handle production load, this data can amount to a lot of waste
+	- Instead one can store one copy of the static files in a Docker volume for easy sharing between containers 
+
+	- (from chatgpt)
+		- a volume is a persistent data storage mechanism that can be used to share data between docker containers and host machine 
+		- volumes are used to store/manage data that needs to persist beyond the lifetime of the container: databases, configs, logs
+		- it is essentially a directory that’s stored outside of the container’s file system
+		- if a container is deleted or recreated the data that is stored in the volume will persist
+		- docker run -it -v myvolume:/app/data mycontainer
+			- mounts a volume “myvolume” located on host machine to a volume/dir /app/data on a container 
+
+	- docker volume ls (list of docker volumes created on host machine)
+	- docker inspect mycontainer (used to display info about docker objects: containers, images, networks, plugins, nodes, volumes, services, tasks)
+	- docker inspect db1 -f '{{ json .Mounts }}' | python -m json.tool (info about volumes)
+	- docker volume create website
+		- creates a new volume named “website”
+		- volumes are created in protected dirs: /var/lib/docker/volumes (hence can be accessed in sudo mode)
+	- docker run -d --name web1 -p 80:80 -v website:/usr/local/apache2/htdocs:ro httpd:2.4 (runs docker with attached “website” volume)
+	- docker volume prune (removes unused containers)
+	- docker volume rm my_volume (removes a volume)
+	- docker volume inspect website (info about volume “website”)
+	- tar czf /tmp/website_$(date +%Y-%m-%d-%H%M).tgz -C /var/lib/docker/volumes/website/_data . (Back up volume, should be SU when doing it from the host)
+	- docker run -it --rm -v website:/website -v /tmp:/backup bash tar czf /backup/website_$(date +%Y-%m-%d-%H-%M).tgz -C /website . 
+		- backing up volume from within a container, no need to be super user
+
+Using docker volumes is a preferred method of storing container data locally
+Volume support is built directly into docker
+Storing data in volumes still requires to backup data in those volumes on our own
+There is an option to store container data in the cloud - it’s not a solution for every problem but sometimes it’s useful
+	- pip install --upgrade --user awscli (install aws cli)
+	- sudo amazon-linux-extras install epel
+	  sudo yum install s3fs-fuse -y (gcsfuse for gcloud; gsutil instead of awscli)
+		- s3fs - allows to mount an S3 bucket via FUSE (Filesystem in Userspace)
+		- s3fs makes you operate files and directories in S3 bucket like a local filesystem
+	- sudo s3fs $BUCKET /mnt/widget-factory -o allow_other -o default_acl=public-read -o use_cache=/tmp/s3fs
+		- Mount s3 $BUCKET (bucket name) to /mnt/widget-factory 
+
+Using Dockerfile
+	- General guidelines
+		- avoid including unnecessary files 
+		- use .dockerignore
+		- use multi stage builds ?
+		- Don’t install unnecessary packages
+		- Decouple apps
+		- Minimize number of layers
+		- sort multiline arguments
+		- leverage the build cache
+	- create a new Dockerfile
+		FROM httpd:2.4
+		RUN apt update -y && apt upgrade -y && apt autoremove -y && apt clean && rm -rf /var/lib/apt/lists/*
+	- docker build -t widgetfactory:0.1 .
+		- builds an image
+		- -t tags image with specific name
+		- . current directory where docker file is in
+	- export some vars for docker inspect
+		- export showLayers='{{ range .RootFS.Layers }}{{ println . }}{{end}}' 
+		- export showSize='{{ .Size }}'
+	- docker inspect -f "$showSize" widgetfactory:0.1 (size in bytes)
+	- docker inspect -f "$showLayers” widgetfactory:0.1 (shows info about layers)
+		- Layers
+			- Docker images are built up with a series of layers. 
+			- Each layer contains a set of changes/modifications to the filesystem
+				like installing software, adding files, updating settings. 
+			- When an image is built each layer is added on top of the previous one
+			- Each layer of the image corresponds to an instruction in the Dockerfile
+			- when an image is built, each layer is cached 	so that subsequent builds can reuse layers that have not changed
+			- it helps to make containerization process more efficient by reducing the size of images and making it easier to share and distribute them 
+	- docker run --rm -it widgetfactory:0.2 bash 
+		- it (interactive terminal)
+		- --rm remove container after it’s stopped
+	- Update Dockerfile to include website data
+		FROM httpd:2.4 
+		RUN apt update -y && apt upgrade -y && apt autoremove -y && apt clean && rm -rf /var/lib/apt/lists/* 
+		RUN rm -f /usr/local/apache2/htdocs/index.html 
+		WORKDIR /usr/local/apache2/htdocs 
+		COPY ./web .
+	
+		- FROM : pulls existing image
+		- RUN : runs a command in a container 
+		- WORKDIR - basically CD command - sets working directory
+		- COPY - basically cp command
+		
+	- docker run --name web1 -p 80:80 widgetfactory:0.3 (run an image)
+	- docker start web1 (restarts a stopped container) 
+
+	- Another Dockerfile example:
+	
+		# Use an official Node.js runtime as a parent image 
+		FROM node:10-alpine 
+	
+		# Set the working directory to /app 
+		WORKDIR /app 
+
+		# Copy the current directory contents into the container at /app 
+		COPY . /app # Install any needed dependencies RUN npm install 
+	
+		# Make port 3000 available to the world outside this container 
+		EXPOSE 3000 
+
+		# Define the command to run the app : This will run when the container Starts 
+		CMD ["npm", "start"]
+
+		- docker build -t myapp .  (Builds an image)
+		- docker run -p 3000:3000 myapp (Run a container)
+
+	- Some other Dockerfile commands
+		- FROM: Specifies the base image to use for the new image. 
+		- RUN: Executes a command during the image build process (builds your app with make). 
+		- COPY or ADD: Copies files from the host machine to the image. 
+		- WORKDIR: Sets the working directory (inside container) for any RUN, CMD, ENTRYPOINT, COPY, and ADD instructions that follow it. 
+		- CMD: Specifies the default command to be executed when a container is started from the Docker image. 
+		- ENTRYPOINT: Specifies the executable that should be run when the container starts. 
+		- ENV: Sets environment variables in the image. 
+		- EXPOSE: Exposes a port on the container (when container is running ). 
+		- VOLUME: Creates a mount point for a volume in the container.
+		- STOPSIGNAL SIGTERM (optional to terminate a container)
+		- HEALTHCHECK CMD curl localhost:80 (optional healthcheck)
+	
+
+Networking
+	- Each container should serve a single purpose such as running one application like a webserver 
+	- When containers connected together they are more useful
+		- ex: a webserver container can be connected to a database containers to provide application storage
+	- Container Network model - networking spec
+	- The libnetwork implements CNM 
+	- Driver extend the model by network topologies
+	- Docker supports a few different types of networks (Drivers)
+		- bridge (default network):
+			- provides networking for a set of containers that make up an application 
+			- isolate applications from each other
+		- host: 
+			- allows directly attach to the host’s network
+		- overlay 
+			- used for docker swarm
+		- macvlan
+			- for legacy apps, or traffic listeners
+		- none
+			- disabled network (normally works in conjunction of another driver)
+		- 3rd party plugins
+	- docker network ls (inspect existing networks)
+	- docker run -d --name web1 httpd:2.4 (run a container)
+	- docker inspect web1 (inspect running container)
+	- ip addr (to check containers networking)
+	- docker network create test_app (creates a new network)
+	- docker run -d --name web2  --network test_app httpd:2.4 (run a container with a specific network)
+	- we can connect between containers on the same non-default bridge network via IP as well as via container name
+	- docker run -d --name web3 --network host httpd:2.4 (running a container on a host network)
+		- it listens to port 80 on the host
+		- being on the host network gives access to other networks within the env
+	- docker network inspect <name> (Getting detailed info about a network)
+	- docker network connect <network_name> <running_container_name> (connect a container to a network)
+	- docker network disconnect <network_name> <running_container_name> (disconnect a container from a network)
+	- Private IP ranges
+		- 10.0.0.0 - 10.255..255.255
+		- 172.16.0.0 - 172.31.255.255
+		- 192.168.0.0 - 192.168.255.255
+	- docker network create --subnet 10.1.0.1/24 --gateway 10.1.0.1 br2 (create a new bridge network specifying subnet & gateway)
+	-
+
+Container Network Model (CNM)
+	- sandbox
+		- Isolates the network stack: ports, route tables dns’s
+	- endpoints 
+		- virtual network interfaces
+		- connects sandbox to a network
+	- Network
+		- 
+
+
+Volumes/Data Storage
+	- Volumes - allow for persistent data 
+	- decoupled from a container
+	- storage locations (on linux): /var/lib/docker/<storage-driver>
+	- docker volume ls (list volumes)
+	- docker volume create <volume_name> (create a new default/local volume)
+	- docker volume inspect <volume_name> 
+	- docker volume rm <volume_name> (remove a volume)
+	- docker volume prune (removes all unused containers)
+
+Logging implementation example
+	- Syslog
+		- standard protocol for computer logging messages
+		- consists of a daemon running on system that receives log messages from various sources and then writes them to file 
+			or forwards them to central logging server. 
+		- The messages can generated by variety of sources: kernel, system daemons, apps, and user-level processes 
+	- vim /etc/rsyslog.conf
+	- systemctl start rsyslog
+	- add syslog config to docker (daemon.json)
+		- { 
+			"log-driver": "syslog", 
+			"log-opts": { 
+				"syslog-address": "udp://10.0.1.21:514" 
+			} 
+		}
+	- systemctl start docker	 (starting a docker daemon)
+	- docker run -d --name syslog-logging httpd (running httpd container)
+	- docker logs syslog-logging (retrive docker logs)
+	- tail /var/log/messages (to retrive messages from syslog logging system)
+	- docker run -d --name json-logging --log-driver json-file httpd (start a container providing logging mechanism; so no messages will appear in /var/log messages )
+
+Watchtower
+	- a tool used to automatically update the running Docker containers with the latest version of the respective images from Docker Hub or a private registry  
+	- it constantly monitors the running containers and compares their version with the latest version available in the registry (every 30 sec)
+	- can work with Kuberneties, docker swarm
+	- can be run as a standalone container or as a service on Docker host.
+	- create Dockerfile:
+		FROM node 
+		RUN mkdir -p /var/node 
+		ADD content-express-demo-app/ /var/node 
+		WORKDIR /var/node 
+		RUN npm install 
+		CMD ./bin/www
+	- build docker image on Docker hub (first docker login)
+		- docker build -t dgaisan/express -f Dockerfile .
+		- docker push dgaisan/express
+		- docker run -d --name demo-app -p 80:3000 --restart always dgaisan/express
+	- execute watchtower
+		- docker run -d --name watchtower --restart always -v /var/run/docker.sock:/var/run/docker.sock v2tec/watchtower -i 30
+			- -i (interval in seconds)
+		- now whenever the Dockerfile gets updated on Docker hub, the watchtower will push the updates to the running container 
+
+Dockerizing an App
+	- .dockerignore (add a list of files to ignore by a container)
+	- Dockerizing Python app
+		- Flask
+			- lightweight Python web framework
+		- SqlAlchemy
+			- provides efficient database access for relational databases (sqlLite, MySql, Postgrees)
+			- 
+		- Dockerfile
+			FROM python:3 
+			ENV PYBASE /pybase 
+			ENV PYTHONUSERBASE $PYBASE 
+			ENV PATH $PYBASE/bin:$PATH 
+			RUN pip install pipenv 
+		
+			WORKDIR /tmp 
+			COPY Pipfile . 
+			RUN pipenv lock 
+			RUN PIP_USER=1 PIP_IGNORE_INSTALLED=1 pipenv install -d --system --ignore-pipfile 
+		
+			COPY . /app/notes 
+			WORKDIR /app/notes 
+			EXPOSE 80 
+			CMD ["flask", "run", "--port=80", "--host=0.0.0.0"]
+		- docker build -t notesapp .
+		- docker run --rm -it —network notes -v /home/cloud_user/notes/migrations:/app/notes/migrations notesapp:0.1 bash  
+			- flask db init (inits sql alchemy)
+			- flask db migrate 
+			- flask db upgrade (applies migration files)
+		- du (disk usage )
+			
+
+Metadata and Labels
+	- start a watchtower container
+		- docker run -d --name watchtower --restart always -v /var/run/docker.sock:/var/run/docker.sock v2tec/watchtower -i 30
+	- create a new Dockerfile
+		FROM node 
+		LABEL maintainer="dimon" 
+		ARG BUILD_VERSION 
+		ARG BUILD_DATE 
+		ARG APP_NAME 
+		LABEL org.label-schema.build-date=$BUILD_DATE 
+		LABEL org.label-schema.app-name=$APP_NAME 
+		LABEL org.label-schema.version=$BUILD_VERSION 
+		RUN mkdir -p /var/node 
+		ADD weather-app/ /var/node/ 
+		WORKDIR /var/node 
+		RUN npm install 
+		EXPOSE 3000 
+		CMD ./bin/www
+	- build image from the Dockerfile
+		docker build -t dgaisan/weatherapp \ 
+			--build-arg BUILD_DATE=$(date -u +'%Y-%m-%d') \ 
+			--build-arg APP_NAME=weather-app \ 
+			--build-arg BUILD_VERSION=v1.0 \ 
+			-f Dockerfile .
+	- Inspect image
+		- docker images
+		- docker inspect <image_id>
+	- push image to docker hub
+		- docker push dgaisan/weatherapp
+	- run a container 
+		- docker run -d --name weather-app -p 80:3000 --restart always dgaisan/weatherapp
+	- make changes to the codebase, rebuild image with newer version, push to docker hub
+		- docker build -t dgaisan/weatherapp \ 
+			--build-arg BUILD_DATE=$(date -u +'%Y-%m-%d') \ 
+			--build-arg APP_NAME=weather-app \ 
+			--build-arg BUILD_VERSION=v1.0 \ 
+			-f Dockerfile .
+		- docker inspect <new_image_id>
+		- docker push dgaisan/weatherapp
+	- at some point watchtower will update running dgaisan/weatherapp container
+	- docker inspect <container_id>
+
+
+Docker Compose
+	- a tool for defining and running multi container applications
+	- provides a way to specify multi container setup in YAML file
+	- define services in a Compose file “docker-compose.yml”. Specify the desired number of replicas for each service
+	- use docker compose up -d to start services defined in the Compose file. 
+	- Docker compose automatically manages the containers load balancing
+	- sample docker compose yaml (docker-compose.yml)
+		version: '3' 
+		services: 
+			web: 
+				build: ./web 
+				ports: 
+					- 8080:80 
+				networks: 
+					- mynetwork 
+				depends_on: 
+					- db 
+				tty: true 
+			db: 
+				image: mysql:latest 
+				environment: 
+					- MYSQL_ROOT_PASSWORD=${SECRET_PASSWORD} 
+					- MYSQL_DATABASE=${DATABASE_NAME} 
+				volumes: 
+					- dbdata:/var/lib/mysql 
+				networks: 
+					- mynetwork 
+		networks: 
+			mynetwork: 
+		volumes: 
+			dbdata:
+
+	- docker-compose YAML params:
+		- version: '3': Specifies the version of the Docker Compose file format being used
+		- services: Defines the services that make up the application. In this case, we have web and db.
+		- build: Specifies the build context for the web service (in this case, it points to a directory named "web" in the current directory).
+		- ports: Maps port 8080 on the host to port 80 on the container.
+		- networks: Connects the service to the custom network named mynetwork.
+		- depends_on: Defines a dependency on the db service, ensuring that the database container is started before the web container.
+		- image: Specifies the MySQL image and version to use.
+		- environment: Sets environment variables required by the MySQL image.
+			- variables are read from .env file when specified in following format: ${VAR_NAME}
+		- volumes: Mounts a volume named dbdata to store the MySQL data persistently.
+		- networks (outside of service): Defines the custom network mynetwork that the services are connected to.
+		- volumes: Creates a volume named dbdata for the MySQL data.
+	- docker compose up --build -d (starts services defined in docker compose)		
+Load Balancing containers (on a single host)
+	- Container load balancing can be achieved using Docker Swarm, Docker Compose, and also nginx
+	- Having load balancing with multiple backend servers on a single host can provide benefits depending on specific reqs and circumstances of an app:
+		- High availability and Fault Tolerance: if one backend service becomes unavailable or has issues the load balancer can automatically redirect traffic to healthy servers
+		- Improved resource utilization: Load balancer insures that each server receives fair share of requests
+		- zero downtime deployment (rolling updates): seamless deployment, minimizing the impact on users
+
+
+version: '3.2' 
+services: 
+	weather-app1: 
+		build: ./weather-app 
+		tty: true 
+		networks: 
+		 - frontend 
+	weather-app2: 
+		build: ./weather-app 
+		tty: true 
+		networks: 
+		 - frontend 
+	weather-app3: 
+		build: ./weather-app 
+		tty: true 
+		networks: 
+		 - frontend 
+	loadbalancer: 
+		build: ./load-balancer 
+		image: nginx 
+		tty: true 
+		ports: 
+		 - '80:80' 
+		networks: 
+		 - frontend
+ networks: frontend:
+
+
+events { worker_connections 1024; } http { upstream localhost { server weather-app1:3000; server weather-app2:3000; server weather-app3:3000; } server { listen 80; server_name localhost; location / { proxy_pass http://localhost; proxy_set_header Host $host; } } }
+
+FROM nginx
+COPY nginx.conf /etc/nginx/nginx.conf
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
+
+Docker Swarm
+	- Container orchestration tool that allows to manage and scale multiple docker containers across multiple host machines
+	- Allows to group multiple docker hosts into a cluster which acts as a single virtual Docker host
+	- Simplifies the process of managing and deploying  containers by automating many of the tasks involved (scaling, load balancing, rolling updates)
+		- rolling update: strategy for updating a group of containers in a way that insures the service remains available throughut the update process 
+	- it insures that a containerized application is highly available and can handle a high level of traffic
+	-  
+	- Docker CLI allows creating a swarm of docker engines where an application can be deployed
+	- 
+
+Kubernetes
+	- 
+
+
+Build Rust project using Docker 
+	- create Dockerfile inside rust project folder
+		FROM rust:1.67 
+		WORKDIR /usr/src/myapp 
+		COPY . . 
+		RUN cargo install --path . 
+		CMD ["myapp"]
+	- build Dockerfile into an image
+		- docker build -t my-rust-app .
+	- Run container
+		- docker run -it --rm --name my-running-app my-rust-app /bin/bash
+	- Compile local project using Docker Rust container
+		- docker run --rm --user "$(id -u)":"$(id -g)" -v "$PWD":/usr/src/myapp -w /usr/src/myapp rust:1.23.0 cargo build --release
+			- -v (set current project’s folder to use a volume)
+			- -w (set working directory to the volume)
+			- cargo build --release (compile/build project)
+
+Create a blog service using ghost
+	- vi docker-compose.yml
+	version: '3' 
+	services: 
+		ghost: 
+			image: ghost:1-alpine 
+			container_name: ghost-blog 
+			restart: always 
+			ports: 
+				- 80:2368 
+			environment: 
+				database__client: mysql 
+				database__connection__host: mydb 
+				database__connection__user: root 
+				database__connection__password: password1 
+				database__connection__database: ghost 
+			volumes: 
+				- ghost-volume:/var/lib/ghost 
+			depends_on: 
+				- mydb 
+		mydb: 
+			image: mysql:5.7 
+			container_name: ghost-db 
+			restart: always 
+			environment: 
+				MYSQL_ROOT_PASSWORD: password1 
+			volumes: 
+				- mysql-volume:/var/lib/mysql 
+	volumes: 
+		ghost-volume:
+		mysql-volume:
+
+	- docker-compose up -d (to build and run services)
+	- docker logs <ghost_container_id> (grab container logs)
+	- docker-compose down (stop & remove services)
+
+
+Monitoring containers
+
+
+Some public Containers from Docker Hub
+	- node
+	- mysql
+		- docker run -it -rm —name my_db -e MYSQL_ROOT_PASSWORD=my-secret-pass mysql:tag /bin/bash (startup server)
+		- mysql -u user_name -p (connect to mysql using cli client)
+		- by default mysql will write its data files into /val/lib/mysql inside container
+	- adminer (php admin)
+	- alpine (basic linux)
+	- python 
+	- httpd (apache server)
+	- nginx
+	- rust 
+	- ghost (free blogging platform)
+
+
+
+***Some docker commands practice 
+		
+	docker run -d --name nginx-container --restart unless-stopped -p 8080:80 --memory 500M --memory-reservation nginx
+		-d (daemon)
+		--name
+		--restart 
+			no (container just stops if it crashes)
+			on-failure (auto restart if it crashes)
+			always (always restart even on normal exit, also on docker restart. Be careful using it so that containers are not started/restarted in endless loop)
+			unless-stopped (like “always”, unless manually stopped)
+		-p (publish port) 
+		--rm (auto delete container on stop. Not compatible with --restart)
+		--memory (set memory limit)
+		--memory-reservation (soft limit, when there’s not much memory)
+
+
+Linux utils
+
+Tar
+	- tar cf archive.tar /var/folder (to archive a folder)
+	- tar xvz archive.tar (extract files)
+
+Libc
+	- refers to C library - fundamental component of Linux
+	- typically implemented as a shared library (libc.so)
+	- commonly used functions include: printf(), scan(), malloc(), free(), open(), write(), …
+	- a lot utils, apps, tools depend on libc:
+		- command line utils: ls, cp, mv, rm, grep, awk, sed, find, tar, gzip use libc for file and dir operations, string manipulation, pattern matching, …
+		- bash, zsh are built on top of libc
+		- Vim, emacs use libc
+		- httpd & nginx utilize libc for file handling, text manipulation
+		- gcc, gdb, python rely on libc
+		- apt & yum rely on libc
+		- desktop environment: Gnome & KDE
+
+Busybox
+	- Software package that provides a collection of commonUnix utils in a single executable
+		- file management tools: ls, cp, mv
+		- shell utils: sh, echo, cat
+		- networking utils: ifconfig, ping
+		- system admin tools: mount, unmount
+		- …
+	- Typically used in environments where disk space, memory  or processing power is limited
+
+Sed vs Awk
+	- Awk
+		- Used for column based processing (.csv)
+		- complex text pattern matching
+		- data manipulation and extraction
+	- Sed
+		- stream editing; operates line-by-line
+		- useful for performing quick replacements 
+		- simple text pattern matches
+
+
+AWS Fargate
+	- Prior to Fargate the only option to deploy containers was using EC2 instances
+	- Simplifies container deployment
+	- Optimizes resource usage resulting cost savings
+	- Allows for efficient Ci/CD	
+
+	- Task definition 
+		- A text file that defines application composition
+		- *application blueprint
+	- Task
+		- An instance of task definition
+		- smallest deployment unit
+	- Service
+		- Maintains the desired number of tasks to run in parallel
+	- Cluster
+		- Logical grouping of tasks or services to isolate applications
+
+	
+	- Benefits
+		- Operational efficiency, adaptive scaling 
+		- pay as you go pricing.
+		- compliant with Hippa, PCI, etc…
+		- secured (additional level of security)
+		- highly available, fault tolerant 
+
+	- Limitations
+		- No infrastructure control (cannot customize underlying infra, or perform OS-level confifg)
+		- No persistent storage ()
+	
+	- Use Lambda when need to run event-driven action or short lived computations
+		- Fargate is an overkill for short lived computations
+	- Use other solutions when need persistent storage
+	- Legacy monolith apps are not a perfect fit for Fargate
+	- Apps that require OS-level networking configs are not a fit for running in Fargate
+
+	- Container orchestrators
+		- Kuberneties
+		- Docker Swarm
+		- AWS ECS (Elastic Container Service)
+			- Instance types:
+				- AWS EC2
+				- AWS Fargate
+					- Automatic provisioning
+					- Networking is abstract (not VPCs setups, etc…)
+					- Auto Scaling 
+					- Pay as you go
+	
+	- Container Build process
+		- Dockerfile -> build -> Docker Image -> run -> Container -> upload -> Registry (ECR)
+
+	- ECS architecture with Fargate 
+		- Task definition -> Tasks -> Cluster (services & batch jobs)
+
+	- ECS EC2 vs Fargate
+		- EC2
+			- Flexible & customizable hardare (with more ops overhead)
+			- Cost: over & under provisioning
+			- Workload: Instances are static -> manual scaling 
+			- Best option for legacy apps (where not all aspects of the app can be containarized)
+			- 
+		- Fargate 
+			- Serverless experience
+			- Cost: Automatic provisioning (pay per usage)
+			- Autoscaling (up & down to meet specific traffic)
+			-  Can only run stateless apps
+
+	- EKS architecture with Fargate
+		- EKS: managed Kubernetes Service 
+		- Kubernetes concepts
+			- Pod: smallest deployable unit
+				- contains one or more containers 
+				- share the same network space (unique ip address)
+				- share same storage area  (containers within a Pod can share data)
+				- Pod.yaml 
+			- ReplicaSet: Specifies number of Pods that must be running all the time
+				- If a pod fails during execution, ReplicaSet will replace a failed Pod with a new one
+				- ReplicaSet.yaml 
+			- Deployment 
+				- Declarative update strategy for applications 
+				- Manages application deployment using declarative configuration
+				- Deployment.yaml 
+
+		- Control Plane ()
+			- AWS Cloud -> AWS VPC	
+				- etcd: distributed key-value store that maintain cluster’s config data
+				- Api Server: window to control plane () 	
+				- Scheduler
+				- Control Manager: manages state of the cluster
+		- Tools
+			- eksctl: Creates and manages the EKS cluster (specific to AWS)
+			- kubectl: Kubernetes command like tool
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
