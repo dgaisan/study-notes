@@ -1,0 +1,147 @@
+[Blockchain] 
+decentralized digital ledger of transactions. Every transaction is stored as a block in the chain and linked to the previous block using cryptography. It’s like a database of transactions. There are public or private blockchains. When transaction is made it’s broadcast to a network of computers called Nodes. Blockchain is immutable (order of blocks), unless the 51% attack. 
+Each block contains 
+	- records/transactions (each transaction is signed by a private key of transaction owner), 
+	- reference to previous block, 
+	- a proof of work (or a different consensus, Proof of Stake for example). 
+Transaction can be a financial transaction, an event, any any other piece of data
+
+
+Blockchain is a specific type of distributed ledger that uses blocks to store transactions data
+
+[Types of blockchains]
+- Public (not under anyone’s ownership)
+	- Bitcoin, Etherium
+	- Anyone can join and participate (read, write)
+	- transparent
+	- encrypted
+	- everyone is anonymous
+	- Append only
+	- Participation: provide a transaction (someone will verify a block for a fee); Participate in consensus (mining)
+	- Normally larger than private blockchains, and also safer
+	- transactions are slow, verifying takes times, (tsx is visible right away but doesn’t get included into main ledger until verified)
+
+- Private
+	- by invitation
+	- much smaller than public ones
+	- not anonymized
+	- faster transactions (due to smaller number of participants)
+
+- Semi private or hybrid
+	- most of the time everyone can participate
+
+- Sidechain
+	- separate blockchain that connects to main blockchain
+	- Polkadot
+
+- Permissioned ledger
+	- blockchain with permissions controls
+	- Ripple (built on its own blockchain) 
+
+- Tokenized blockchain
+	- creates cryptocurrency thru initial offering/distribution or mining (reward) as an outcome of a process defined by consensus
+	- validating someones transaction via Proof Of Work results into a fee/reward
+
+- Tokenless blockchain
+	- not really a blockchain because they lack the basic of transfer of value unit
+
+[Address or bitcoin address]
+	- unique identifiers that are unique identifiers.
+	- comprised of 26-35 alphanumeric character
+	- requires public key + private key 
+	- apply sha256sum to public key = address
+
+[Transaction]
+	- main unit of blockchain
+	- transferring of values from one address to another
+
+[Transfer fee]
+	- Miners get a fee for adding a transaction to a block
+	
+[Block]
+	- block hash, timestamp, nonce and at least one transaction
+
+[Block explorer]
+	- a tool for viewing information about blocks
+
+[Block height]
+	- represents the number of blocks that are ahead of a given block
+
+[P2P network]
+	- type of network where each peer can contact  other peers  and exchange information
+
+[Smart contract]
+	- computer program that is used to set the rules of a contract between two parties
+	- don’t require 3rd party
+	- contracts auto execute
+	- parties remain anonymous
+	- transparent
+
+[Oracles]
+	- 3rd party information source
+	- part of smart contract system
+	- oracles deliver external data to smart contacts (by themself SC can’t access external info)
+	- 
+
+[Consensus]
+	- An agreement between the parties (about the state of the blockchain)
+	-  
+
+[Confirmation]
+	- happens when a network has successfully processed a transaction
+
+[Cryptocurrency]
+	- digital form of money
+	- use blockchain for transferring
+	- they are not blockchain
+	- use decentralized control system (via distributed ledger)
+
+[Cryptographic hash function]
+	- mathematical function that takes an input value of some length and output another value of fixed length
+	- MD5, SHA256, HMAC
+	- Deterministic: For the same input there always be same output
+	- Collision resistant
+	- 
+
+[DAPP]
+	- Decentralized Application
+	- backend runs on multiple computers that are part of decentralized	network
+	- 
+
+[DAO] 
+	- Decentralized Autonomous Organization
+	- software that runs on top of blockchain
+
+[Distributed ledger]
+	- network of identical databases
+	- often confused with blockchain, but they are not
+	- data saved on each node individually. When all participants reach agreement the ledger gets updated
+
+[Digital signature]
+	- used to identify an entity which is sending a message
+	- 
+
+[Ethirium]	
+	- blockchain technology
+	- programming language Solidity
+	- smart contract technology: scripts can be put into transactions (and run as an event)
+	- smaller blocks: 2KB
+	
+[EVM]
+	- Eth virtual machine
+	- network of machines that run the same software, and are public nodes
+	
+[Testnet]
+	- software that is used for testing out new features and changes to the blockchain w/o disrupting the primary software
+	- identical to the original blockchain being tested
+	- Bitcoin and Eth use testnets
+	- sorta dev env
+
+[Fork]
+	- creates a separate version of a chain
+	- happens when underlying software is changed/updated but not all users agree on the new rules
+	- in essence they are change to a cryptocurrency protocol 
+	- Soft-Fork - backward compatible upgrade
+	- hard-Fork - nodes that don’t upgrade to new software will no longer be able to validate transactions or mine blocks on new chain
+
+ 
