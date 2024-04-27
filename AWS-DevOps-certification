@@ -1,0 +1,462 @@
+
+Terminology/techniques
+	- Canary deployment
+		- release management technique that involves gradually rolling out a new version of an application or service to a subset of users before making it available to entire user base
+		- used to detect issues on client side for a small population
+		- * form of canary deployment 
+	- Blue/Green deployments
+		- release management strategy that aims to minimize downtime, mitigate risks during deployment, and ease of roll back
+		- two identical environment (blue & green) are created: one represents production, while the other is a replica of new version of production environment
+		- blue: current production
+		- green: replica of blue environment or newer version of it
+		- green environment is heavily tested and verified
+		- once green env is tested, traffic is switched from blue to green 
+			- update DNS record
+			- adjust load balancer configs
+			- leveraging routing mechanism
+		- once traffic is redirected to green env, it goes thru additional validation. If validation fails, quick rollback is done via redirecting traffic back to blue env
+		- 
+	- A/B testing
+		- experiment with two or more variants of a webpage
+		- 
+
+
+CI/CD
+	- water flow projects have slow release cycle
+	- DevOps in action
+		- Plan -> Code -> Build -> Test -> Release -> Deploy -> Operate -> Monitor (and again from from the beginning)
+	- Ci/CD cycle
+		- Continuous Integration
+			- Source code + test
+		- Continuous Delivery
+			- Build + QA 
+			- symbolic stop sign: Manual approval
+		- Continuous Deploy
+			- Release to Prod 
+***
+- CI (Continuous  Integration): coding philosophy, set of practices that drives dev teams to implement small changes and check in code frequently 
+- CD (Continues Delivery): Picks up where CI ends - automates the delivery of application to selected infrastructure environment.
+- CI/CD process:
+	CI
+		- Code is written and frequently checked into a repo
+		- Code is unit tested and built 
+	CD
+		- After code passes CI, Continuous delivery kicks in, publishing/releasing of the app into prod
+
+* Continuous deployment is the methodology of creating a robust testing framework and automatically pushing your code out when tests pass. The biggest difference between continuous delivery and continuous deployment is that continuous delivery requires a manual deployment and continuous deployment does not.
+* Continuous delivery ensures software is always ready to be deployed. This can be done by testing every change that is made. Because of the testing involved, the final deployment to a production environment is a manual deployment.
+***
+
+Code Commit
+	- managed service for storing private code repos
+	- highly available, scalable, fault tolerant
+	- integrates with CodeBuild, CodePipeline, CodeDeploy, Lambda, SNS
+	- works with existing git-based tools
+	- supports other repos: S3, Github, Bitbucket, GitHub enterprise
+		- to make S3 a repository, we need to turn on versioning 
+	
+	- repository actions
+		- create repository
+			- aws codecommit create-repository --repository-name mynewrepo 
+		- view repo
+			- aws codecommit get-repository --repository-name r2
+		- list repos
+			- aws codecommit list-repositories 
+		- delete repos
+			- aws codecommit delete-repository --repository-name r1
+
+
+	- git
+		- origin
+			- conventional name for default remote repo, from which local repo was cloned 
+			- git remote add <name> <repo-url> (add additional remote)
+			- git remote rename <old-name> <new_name> (rename repo)
+
+	- Data Security
+		- Automatic encryption
+			- on push CodeCommit encrypt data in transit (HTTPS/SSL)
+			- on pull CodeCommit decrypts data in transit (HTTPS/SSL)
+			- AWS creates managed key in KMS (AWS managed key) to protect data in rest
+		- IAM
+			- create group for Dev team
+				- Add policy for codecommit PowerUser
+			create group for Admin team
+				- Add policy for CodeCommitFullAcceess
+
+		- main branch
+			- Add policy to allow or deny push capabilities for main branch
+			- allow push commit for all other branches
+	
+CodeBuild
+	- Fully managed continuous integration service
+	- compiles source code, runs tests
+	- produces software packages that are ready to deploy
+		- for ex. Java jar files
+	- no need to maintain build servers
+	- codebuild is not needed for everything
+		- html files
+		- cloudformation 
+	- scales to fit needs
+	- $ changes based on builds running (ho long they are running)
+	- accessed via aws console, CLI, SDK, CodePipeline
+	- build artifacts are stored in S3
+		- initially code is grabbed from CodeCommit repo
+		- perform build
+		- artifacts stored in S3
+			- versioning ON
+			- encryption at rest is ON
+	- in a Pipeline Codebuild can be Build/Compile Stage, and/or Test stage
+	- supported CodeBuild sources
+		- S3
+		- CodeCommit
+		- GitHub
+		- Bitbucket 
+		- etc…
+
+	- a Build Project tells CodeBuild how to run a build
+		- where to get the source code
+		- which environment to use
+		- which build commands to run 
+		- where to store the build output (S3)
+
+	- build spec file
+		- CodeBuild uses this file to run steps for building a project
+		- YAML (buildspec.yaml)
+		- collection of build commands and related settings
+		- can be packaged with source code, or as a part of build project
+
+YAML
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - echo Installing dependencies...
+      - npm install -g typescript
+      - npm install
+
+  pre_build: 
+	commands: 
+	  - echo Running unit tests... 
+	  - npm test  # Adjust command if your tests use a different script
+
+  build:
+    commands:
+      - echo Building the app...
+      - npm run build
+
+  # ... other phases
+  post_build:
+    commands:
+      - echo Upload artifacts to S3
+      - aws s3 cp build/ s3://your-bucket-name/path/to/artifacts/
+
+artifacts:
+  files:
+    - build/**/*
+  base-directory: build
+  name: react-app-build
+
+
+		- post_build phase is needed for tasks such as (opt): 
+			- Uploading artifacts to S3 buckets. 
+			- Triggering deployments to other environments. 
+			- Running additional tests or quality checks. 
+			- Sending notifications or alerts. 
+			- Executing custom scripts for specific project needs.
+
+
+	- code build can send notification (SNS)
+	
+	- use case #1
+		- developer pushes code into CodeCommit; 
+		- CloudWatch listens to CodeCommit; CloudWatch Event triggers CodeBuild to run a code on merged code
+			- Lambda can also be used to trigger build on code push
+		- * CloudWatch Events renamed to EventBridge Events
+			- EventBrige Events are the same as CloudWatch Events with some additional functionality 
+		- SNS topic can be setup to notify someone via email  
+
+	- Steps in Build Project
+		- Project Submit
+		- Provisioning (AWS allocates resources)
+		- Download code (build	spec/yaml file is normally packaged with source code)
+		- Install
+		- Pre-build
+		- Build
+		- Post-build
+		- Upload artifacts (ex. Jar file), it’s going to S3 (typically)
+		- Completing (clean up)
+
+	- CodeBuild Environment variables
+		* these variables can be used in build commands
+		- AWS_DEFAULT_REGION (for CLI)
+		- AWS_REGION (for SDK)
+		- CODEBUILD_BUILD_ARN
+		- CODEBUILD_BATCH_BUILD
+		
+		** DO NOT store access keys in these variables.
+			! Instead use managed services: SecretManager or ParameterStore
+
+	- Localbuild (for testing complex buildspec.yaml locally)
+		- *Localstack can be used but it’s an overkill
+		- Use CodeBuild Agent to run builds locally
+		
+	- CodeBuild with VPC
+		- use cases:
+			- run integration tests from your build against data in RDS that’s isolated to a private subnet
+			- query data from AWS Elasticache cluster directly from tests
+			- interact with internal services hosted on EC2, ECS, or services that use internal ELB
+
+	- Automated code review on Pull Request
+		1. Dev creates a PR against main branch
+		2. PR is received by default Event Bus
+		3. Default Event Bus triggers EventBridge rule
+		4. EventBridge rule triggers CodeBuild project
+		5. CodeBuild run quality check and sends the results back to PR as comments. CodeBuild approves or requests PR automatically
+
+CodeDeploy
+	
+	- revisions -> deployment config -> deployment group
+
+	- Source
+		- typically from S3 (where CodeBuild stores artifacts)
+	- Revisions
+		- versions of what to deploy (build packages)
+	- deployment configurations
+		- how to deploy & @ what rate
+		- are we okey with downtime
+		- disaster recovery
+	- ! Service role is needed to create CodeDEploy project
+	
+	- Where to deploy
+		- Deployment groups: could be a single Ec2 instance, or autoscaling group (codedeploy agent should be installed, via user data script)
+		- Lambda, 
+		- ECS
+
+	- With Event Bridge deployments can be monitored
+		- SNS topic subscription can	notify by emails
+		- Trigger lambda function to notify (for example a message in slack channel)
+
+	- CodeDeploy application
+		- a name identifier used to reference deployment settings
+	- Deployment group
+		- instance/instances where you want to target and deploy your code
+	- Deployment Config
+		- set of rules, and success/failure conditions 
+
+	Workflow
+		1. Create application
+		1.1 Create service role (code deploy)
+		2. Specify deployment group
+		3. Specify deployment configuration
+		4. Upload revision
+		5. Deploy
+		6. Check results
+		7. Redeploy as needed  (go back and re-deploy if something is not right)
+
+	Default Deployment options (configs)
+		- one at a time
+			- deploys to a single instance` 
+		- all at once
+		- half at a time
+			- deploys to half of instance
+
+
+	appspec.yml (or appspec.json)
+		- manages deployments
+		- sort of same as cloudformation file
+		- manages each deployment as a series of lifecycle event hooks
+		- what to do before/after installation
+			- hooks allow to run custom code at various times during deployment 
+				- beforeInstall, afterInstall, ..
+		+ CodeDeploy 
+			- grabs deployable content, 
+			- grabs appspec file 
+			- performs deployment (where to deploy)
+
+
+YAML
+version: 0.0
+
+# Define the application name (replace with your actual application name)
+# This name should match the name you used when creating the CodeDeploy application.
+application: MySampleApp
+
+# Define the service role with permissions for CodeDeploy to perform actions on 
+# your resources (e.g., starting/stopping instances, uploading files)
+# You can specify an IAM role ARN here.
+service_role: arn:aws:iam::ACCOUNT_ID:role/CodeDeployServiceRole
+
+# Define processes (deployment stages) involved in your deployment.
+# Here, we have a single 'deploy' stage.
+processes:
+  # Deployment stage named 'deploy'
+  deploy:
+    # Define commands to execute during each stage
+    # These commands will be run on the target EC2 instances.
+    # Here, we use a sample command to stop any existing application process,
+    # copy the new application archive from S3, and then start the application.
+    #  - Replace 'your-script.sh' with the actual script that starts your application.
+    #  - Update paths based on your application structure.
+    commands:
+      - sudo service your-app stop  # Stop existing application (adjust command)
+      - mv /tmp/deployment.zip /path/to/your/application  # Replace paths
+      - unzip /path/to/your/application/deployment.zip  # Replace paths
+      - sudo service your-app start  # Start your application (adjust command)
+
+    # Define timeout in seconds for each stage. 
+    # CodeDeploy will terminate the deployment if it exceeds this time.
+    timeout: 300  # Adjust timeout value as needed
+
+
+
+	Application revision
+		- Select where to store revisions (S3 most common)
+		- bundle revision (push revision to selected repo)
+		- CodeDeploy grabs a revision (from S3) 
+			- deploys it
+				- deployment group (1-X EC2 instances)
+				- 
+
+	- install CodeDeploy agent
+
+#!/bin/bash
+sudo yum -y update
+sudo yum install -y ruby
+sudo yum install -y wget
+sudo yum install -y 
+cd /home/ec2-user
+wget https://aws-codedeploy-us-east-1.s3.us-east-1.amazonaws.com/latest/install
+chmod +x ./install
+sudo ./install auto
+
+Deployment pipelines
+	- the process of moving code from commit, thru build, testing, and deployment in order to get the code to the end users as efficiently as possible
+	- a pipeline implies a flow, so the goal is to have a flow from stage to stage
+		- Source -> Build -> Deploy
+			- Source Providers:
+				S3, CodeCommit, ECR
+				GitHub, GitLab, BitBucket
+			- Build: *compile + test > create artifacts
+			- Deploy: 
+				CodeDeploy, BeansTalk, CloudFormation, 
+				ECS, S3, Lambda 
+	- pipelines are automated using triggers
+		- for example AWS CodePipeline in paired with CloudWatch to spy on repository 
+	- Key pipeline stages
+		- commit code
+		- build code
+		- test code
+	- All stages are not mandatory
+	- Can have a manual approval
+	- Need at least 2 stages
+	- Repository could be GitHub
+	- can integrate with Jenkins
+	- CI (continuous integration)
+		- dev practice where engineers integrate/commit code into shared repo frequently
+	- CD (Continuous delivery/deployment)
+		- Continuous delivery: an approach in which teams produce software reliably and in short cycles, ensuring that software can be released at any time. Deployed manually
+		- Continuous deployment: software produced in short cycles and deployed automatically
+	- Codepipeline is a continuous delivery service.
+		- Vehicle by which the code deployment is automated 
+		- Commit code 
+		- Build (changes are built; can be Jenkins)
+			- Java (needs a build)
+			- static html (no build needed)
+		- Staging (can be jenkins)
+			- code is deployed and tested
+		- Production 
+			- employed to public servers
+
+	- S3 as Repo: turn on S3 versioning
+		
+	- Pipeline testing
+		* normal flow: [S3, Codecommit, github] -> Source -> Build -> Deploy -> Webservers
+		- manual test (manual approval)
+		- Build Stage 
+			- Unit Testing, 
+			- Static Code Analysis
+		- Staging/Testing/QA: 
+			- Integration Testing
+			- Performance Testing
+			- Compliance Testing
+			- Acceptance Testing (A/B testing)
+		- Prod:
+			- Integration Testing
+			- Acceptance Testing
+			- Canary (only in prod)
+
+
+Jenkins
+	- open source CI/CD tool
+	- Jenkins on AWS plugins needed (codedeploy, codebuild, codepipeline,)
+		- Eliminates the need to provision, configure and manage Jenkins Build nodes
+	- Can can replaces one or more AWS services (codedeploy, codebuild, code pipeline)
+		- J can operate in the Build and/or Deploy stages on a pipeline (also can replace pipeline)
+	- Jenkins is deployed in master/agent configuration
+		- Master server + Worker nodes
+		- Elastic IP -> AWS EC2 instance (with Jenkins server) -> (autoscaling group) Jenkins build workers
+		- Jenkins need a config file (?)
+	- Jenkins with CodeDeploy
+		- (developer makes a commit) -> CodePipeline (detects new code and triggers the pipeline) -> CodePipeline invoked Jenkins(on EC2 instances) to build App -> CodeDeploy deploys app in Deployment Group (App Servers) 
+
+
+Pipeline Deployment for MultiAccount env
+	- Source -> Test -> Build -> QA -> Release
+	- Why deploy to multiple accounts?
+		- Apply appropriate security to each account
+		- Apply appropriate security on the database 
+		- Isolate accounts and limit impact of errors
+	Acc1: Dev
+		- developers have freedom
+	Acc2: Prod
+		- very restrictive 
+		- Ideally only Admins have access to it
+
+	Account A (Dev env)
+		- CodePipeline (assumes cross account role)
+			Source (github)
+			Build -> Artifact Store
+			Deploy Dev
+	Account B (Prod Env)
+		- Prod deploy from Dev acc Pipeline 
+
+Full Process
+	- Create a source Repo
+		- GitHub, CodeCommit or S3 (versioned bucket)
+	- Create CodeDeploy project for deployment
+		-  AppName + compute platform (EC2, Lambda, ECS)
+		- Create deploy group
+			- 
+
+Automation Scenarios
+	- Grant/Restrict access to CodeCommit repos
+		- Create policies 
+			- AWS code commit power user policy (use repo but can’t delete it)
+			- 
+	- Where to Store CodeBuild Artifacts
+		- S3 (actions: turn on versioning, turn on encryption in transit)
+	- Run CodeBuild after new code is committed 
+		- Use EventBridge
+
+
+
+When thinking about automation, this of:
+	- EventBridge
+	- Lambda
+	- SNS
+
+
+Example of workflow:
+	#0. Create IAM role: AWS service -> CloudFormation -> Admin
+	#1 Create CodeComit repo
+	#2 Create SNS topic 
+		#2.1 create email subscription
+	#3 Create Pipeline
+		#3.1 source: CodeCommit repo created in step #1
+		#3.2 Add deploy provider: CloudFormation
+		# 
+
+
+
+
